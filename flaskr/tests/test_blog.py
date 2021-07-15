@@ -1,5 +1,6 @@
 import pytest
-from flaskr.db import get_db
+from flaskr.db import get_db, db
+from flaskr.models import Post
 
 
 def test_index(client, auth):
@@ -18,8 +19,9 @@ def test_index(client, auth):
     assert b"test title" in response.data
 
     assert b'by test on 2018-01-01' in response.data
-    assert b'test\nbody' in response.data
+    assert b'test body' in response.data
     assert b'href="/1/update"' in response.data
+
 
 @pytest.mark.parametrize('path', (
     '/create',
@@ -34,14 +36,16 @@ def test_login_required(client, path):
 def test_author_required(client, app, auth):
 
     with app.app_context():
-        conn = get_db()
-        conn.execute("update flaskr_post set author_id = 2 where id = 1")
-        conn.commit()
+        post = db.session.query(Post).filter(Post.id == 1).one_or_none()
+        post.author_id = 2
+        db.session.add(post)
+        db.session.commit()
 
     auth.login()
     assert client.post('/1/update').status_code == 403
     assert client.post('/delete/1').status_code == 403
     assert b'href="/1/update"' not in client.get('/').data
+
 
 @pytest.mark.parametrize('path', (
 '/3/update',
@@ -58,22 +62,24 @@ def test_create_required(client, auth, app):
     response = client.get('/create')
     assert response.status_code == 200
 
-    response = client.post('/create', data = {'title':'created', 'body':'Some Content'})
+    response = client.post('/create', data={'title': 'created', 'body': 'Some Content'})
 
     with app.app_context():
-        conn = get_db()
-        count = conn.execute("SELECT COUNT(id) FROM flaskr_post").fetchone()[0]
+        # conn = get_db()
+        count = db.session.query(Post).count()
+        # count = conn.execute("SELECT COUNT(id) FROM flaskr_post").fetchone()[0]
         assert count == 2
+
 
 def test_update(auth, client, app):
     auth.login()
     assert client.get('/1/update').status_code == 200
-    client.post('/1/update', data = {'body':'Some text', 'title':'Some title'})
-
+    client.post('/1/update', data={'body':'Some text', 'title':'Some title'})
 
     with app.app_context():
-        post = get_db().execute("SELECT * from flaskr_post where id = 1").fetchone()
-        assert post['body'] == 'Some text'
+
+        post = db.session.query(Post).filter(Post.id == 1).one_or_none()
+        assert post.body == 'Some text'
 
 
 def test_delete(client, auth, app):
@@ -82,6 +88,5 @@ def test_delete(client, auth, app):
     assert response.headers['Location'] == 'http://localhost/'
 
     with app.app_context():
-        db = get_db()
-        post = db.execute('SELECT * FROM flaskr_post WHERE id = 1').fetchone()
+        post = db.session.query(Post).filter(Post.id == 1).one_or_none()
         assert post is None
