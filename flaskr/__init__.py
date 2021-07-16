@@ -3,6 +3,8 @@ import os
 from .db import db
 from flask_migrate import Migrate
 from flaskr import models
+from flask_admin import Admin
+from .admin import PostModelView, UserModelView
 
 
 def create_app(test_config=None):
@@ -30,6 +32,11 @@ def create_app(test_config=None):
     app.register_blueprint(auth.bp)
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
+
+    app.config['FLASK_ADMIN_SWATCH'] = 'readable'
+    admin = Admin(app, name='Microblog', template_mode='bootstrap3')
+    admin.add_view(PostModelView(models.Post, db.session, name="All posts"))
+    admin.add_view(UserModelView(models.User, db.session, name="All Users"))
 
     @app.route('/hello')
     def hello():

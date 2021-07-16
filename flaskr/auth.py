@@ -10,8 +10,6 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 @bp.route('/register', methods=('GET','POST'))
 def register():
 
-    # import pdb;pdb.set_trace()
-
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -28,8 +26,6 @@ def register():
             user = User(username=username, password=generate_password_hash(password))
             db.session.add(user)
             db.session.commit()
-            # db.execute("insert into flaskr_user(username, password) values(?,?)",(username, generate_password_hash(password)))
-            # db.commit()
             return redirect(url_for('auth.login'))
 
         flash(error)
@@ -73,7 +69,6 @@ def load_loggedin_user():
         g.user = None
     else:
         g.user = db.session.query(User).filter(User.id == user_id).one_or_none()
-        # g.user = get_db().execute("SELECT * from flaskr_user where id = ?",(user_id,)).fetchone()
 
 
 @bp.route('/logout')

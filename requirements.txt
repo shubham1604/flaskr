@@ -8,9 +8,10 @@ click==7.1.2
 coverage==5.5
 dataclasses==0.8
 Flask==1.1.2
+Flask-Admin==1.5.8
 Flask-Migrate==3.0.1
 Flask-SQLAlchemy==2.5.1
--e git+git@github.com:shubham1604/flaskr.git@8ef0f032f0308fae0a2682c98dace85212c81cbd#egg=flaskr
+-e git+git@github.com:shubham1604/flaskr.git@103995ec3467c6665c2fd66501b2e2b009d6e7ea#egg=flaskr
 greenlet==1.1.0
 idna==2.10
 importlib-metadata==4.0.1
@@ -36,4 +37,5 @@ toml==0.10.2
 typing-extensions==3.10.0.0
 urllib3==1.26.4
 Werkzeug==1.0.1
+WTForms==2.3.3
 zipp==3.4.1
